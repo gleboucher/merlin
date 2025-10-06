@@ -1,0 +1,93 @@
+
+\documentclass[border=8pt, multi, tikz]{standalone} 
+\usepackage{import}
+\subimport{../layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{3d} %for including external image 
+
+\def\ConvColor{rgb:black,5;red,0.1;white,0.5}
+\def\ConvReluColor{rgb:black,0.3;black,1;white,5}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\UnpoolColor{rgb:blue,2;green,1;black,0.3}
+\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcReluColor{rgb:blue,5;red,5;white,4}
+\def\SoftmaxColor{rgb:magenta,5;black,7}   
+\def\SumColor{rgb:blue,5;green,15}
+
+\newcommand{\copymidarrow}{\tikz \draw[-Stealth,line width=0.8mm,draw={rgb:blue,4;red,1;green,1;black,3}] (-0.3,0) -- ++(0.3,0);}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+\tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
+
+
+\node[canvas is zy plane at x=0] (temp) at (-2,0,0) {\includegraphics[width=2cm,height=2cm]{input_image.jpg}};
+
+\pic[shift={(0.8,0,0)}] at (-2,0,0) 
+    {Box={
+        name=pca,
+        caption=\scriptsize PCA,
+        xlabel={{" ","dummy"}},
+        zlabel=20,
+        fill=\SoftmaxColor,
+        opacity=0.4,
+        height=6,
+        width=1,
+        depth=6
+        }
+    };
+
+\pic[shift={ (0.8,0,0) }] at (pca-east) 
+    {RightBandedBox={
+        name=quantum,
+        caption=\scriptsize Quantum Block,
+        fill=\ConvColor,
+        bandfill=\ConvReluColor,
+        height=6,
+        width={ 4 , 4 },
+        depth=6
+        }
+    };
+
+\draw [connection]  (pca-east)    -- node {\midarrow} (quantum-west);
+
+\pic[shift={(0.8,0,0)}] at (quantum-east) {Box={
+    name=fc1,
+    caption=\scriptsize MLP,
+    zlabel=10,
+    ylabel=20,
+    fill=\FcColor,
+    height=6,
+    width=1,
+    depth=6
+    }
+};
+
+\draw [connection]  (quantum-east)    -- node {\midarrow} (fc1-west);
+
+\pic[shift={(0.8, 0, 0)}] at (fc1-east) {Box={
+    name=output,
+    caption=\scriptsize Prediction,
+    fill=red!20,
+    height=1,
+    width=1,
+    depth=1
+    }
+};
+
+\draw [connection]  (fc1-east)    -- node {\midarrow} (output-west);
+
+\pic[shift={(0.7, 0, 0)}] at (output-east) {Box={
+    name=pad_right,
+    caption=,
+    fill=white,
+    opacity=0.0,
+    height=0,
+    width=0,
+    depth=0
+    }
+};
+
+\end{tikzpicture}
+\end{document}
